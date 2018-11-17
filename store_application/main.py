@@ -1,10 +1,13 @@
-'''
+﻿'''
 Created on Nov 15, 2018
 
 @author: USER
 '''
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import QFileDialog
+import os
+import csv
 
 
 class Login(QtWidgets.QDialog):
@@ -52,7 +55,6 @@ class Login(QtWidgets.QDialog):
 
         self.show()
         
-    @QtCore.pyqtSlot()
     def on_click(self):  
         self.close()
         self.main = MainWindow()
@@ -93,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.danh_muc.triggered.connect(self.show_win1)
 
         self.thiet_lap_gia = QtWidgets.QAction('Thiết lập giá', self)
-        #self.thiet_lap_gia.triggered.connect(self.show_win2)
+        self.thiet_lap_gia.triggered.connect(self.show_win2)
 
         self.kiem_kho = QtWidgets.QAction('Kiểm kho', self)
         #self.kiem_kho.triggered.connect(self.show_win3)
@@ -196,6 +198,40 @@ class Window_1(QtWidgets.QDialog):
         
     def upload_hinh(self):
         self.image = QFileDialog.getOpenFileName(None,'OpenFile','',"Image file(*.jpg *gif *.png)")
+
+
+class Window_2(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        
+    def init_ui(self):
+    
+        self.table = QtWidgets.QTableWidget(self)
+        self.table.setGeometry(QtCore.QRect(10,10,600,350))
+        self.table.setRowCount(10)
+        self.table.setColumnCount(5)
+        col_headers = ['Mã hàng hóa','Tên hàng','Giá bán','Giá vốn','Tồn kho']
+        self.table.setHorizontalHeaderLabels(col_headers)
+        
+        self.btn_load = QtWidgets.QPushButton('Xuất file',self)
+        self.btn_load.move(200,400)
+        self.btn_load.clicked.connect(self.export_csv)
+        
+    def export_csv(self):
+        path = QFileDialog.getSaveFileName(self, 'Save CSV', os.getenv('HOME'),'CSV(*.csv')
+        if path[0] != '':
+            with open(path[0],newline ='') as csv_file:
+                writer = csv.writer(csv_file,dialect ='excel')
+                for row in range(self.rowCount()):
+                    row_data  = []
+                    for column in range(self.colorCount()):
+                        item = self.item(row , column)
+                        if item is not None:
+                            row_data.append(item.text())
+                        else:
+                            row_data.append('')
+                    writer.writerow(row_data)
 
 class Window_9(QtWidgets.QDialog):
     def __init__(self):
