@@ -8,8 +8,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.amount_of_products = 0  # this variable is used for counting the number of purchased item
+        self.discount_percentage = 0
+        self.already_added_row = []
         self.data_csv = pandas.read_csv("data.csv")
-
         self.init_ui()
 
     def init_ui(self):
@@ -20,7 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # selected_color = QtGui.QColor(0, 255, 255)
         # self.setStyleSheet("QWidget {background-color: %s}" % selected_color.name())
 
-        # ADD BUTTON
+        # ADD BUTTON --------------------------------------------------------------------------------------------------
         search_btn = QtWidgets.QPushButton(self)
         search_btn.setIcon(QtGui.QIcon("magnifying glass.png"))
         search_btn.move(310, 30)
@@ -38,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
         charge_btn.move(600, 200)
         charge_btn.resize(70, 30)
 
-        # ADD LABLE
+        # ADD LABEL ---------------------------------------------------------------------------------------------------
         self.total_price = QtWidgets.QLabel("Tổng giá: ", self)
         self.total_price.move(600, 250)
         self.total_price_value = QtWidgets.QLabel(self)
@@ -46,8 +47,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.discount = QtWidgets.QLabel("Giảm giá: ", self)
         self.discount.move(600, 300)
-        self.discount_value = QtWidgets.QLabel(self)
+        self.discount_value = QtWidgets.QComboBox(self)
         self.discount_value.move(700, 300)
+        self.discount_value.addItems(["0%", "15%", "30%", "50%"])
+        self.discount_value.currentTextChanged.connect(self.add_price_discount)
 
         self.actual_money = QtWidgets.QLabel("Tiền phải trả: ", self)
         self.actual_money.move(600, 350)
@@ -64,13 +67,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.change_money_value = QtWidgets.QLabel(self)
         self.change_money_value.move(700, 450)
 
-
-        # ADD EDIT BOX
+        # ADD EDIT BOX ------------------------------------------------------------------------------------------------
         self.search_box = QtWidgets.QLineEdit(self)
         self.search_box.move(30, 30)
         self.search_box.resize(280, 25)
 
-        # ADD TABLE
+        # ADD TABLE ---------------------------------------------------------------------------------------------------
         self.purchased_list = QtWidgets.QTableWidget(self)
         self.purchased_list.setRowCount(0)
         self.purchased_list.setColumnCount(8)
@@ -92,16 +94,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.purchased_list.setColumnWidth(7, 25)
         self.purchased_list.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)   # disable editing feature
 
-        # CREATE TABLE OF PRODUCTS
+        # CREATE TABLE OF PRODUCTS ------------------------------------------------------------------------------------
+        row_count, column_count = self.data_csv.shape
         self.product_list = QtWidgets.QTableWidget(self)
-        self.product_list.setRowCount(1)
-        self.product_list.setColumnCount(1)
+        self.product_list.setRowCount(row_count)
+        self.product_list.setColumnCount(3)
         self.product_list.move(30, 360)
         self.product_list.resize(520, 200)
+        self.product_list.setHorizontalHeaderLabels(["Code", "Name", "Price"])
+        self.product_list.horizontalHeaderItem(0).setTextAlignment(0)
+        self.product_list.horizontalHeaderItem(1).setTextAlignment(0)
+        self.product_list.horizontalHeaderItem(2).setTextAlignment(0)
         self.product_list.verticalHeader().hide()
-        self.product_list.horizontalHeader().hide()
-        row_count, column_count = self.data_csv.shape
-        self.product_list.setItem(0, 0, QtWidgets.QTableWidgetItem(self.data_csv["name"][1]))
+        # self.product_list.horizontalHeader().hide()
+        self.product_list.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)    # disable editing feature
+        # self.product_list.setItem(0, 0, QtWidgets.QTableWidgetItem(self.data_csv["name"][1]))
+        self.load_product_list(row_count)
+        # self.product_list.setSelectionBehavior(QtGui.QAbstractItemView.selectionRows)
+        self.product_list.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
 
         ##################################################################################
         # this part I will fix later, trying to add image into the cell!
@@ -112,20 +122,22 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.product_list.setCellWidget(0, 0, QtGui.QPixmap())
         ##################################################################################
 
-
-        # TRIGGERED EVENTS
+        # TRIGGERED EVENTS --------------------------------------------------------------------------------------------
         add_product_btn.clicked.connect(lambda: self.insert_item_to_table(self.purchased_list))
         # need to fix this
         self.purchased_list.cellClicked.connect(self.del_incr_decr_operation)
         add_tab_btn.clicked.connect(self.add_tab)
         # temporary disable below line
         # charge_btn.clicked.connect(self.add_price)
+        # self.discount_value.activated[str].connect(self.add_price_discount)
+        self.product_list.cellClicked.connect(self.select_product_list)
 
-    # DEFINE TRIGGERED EVENTS
+    # DEFINE TRIGGERED EVENTS -----------------------------------------------------------------------------------------
     def search_trigger(self):
         print("search thu gi do o day")
 
-    def insert_item_to_table(self, table, item_code="102020", item_name="Random", amount="1", price="11000"):
+    def insert_item_to_table(self, table, item_code="102020", item_name="Random", price="11000"):
+        amount = "1"
         row_position = table.rowCount()
         table.insertRow(row_position)
         # this part may need to be fixed for clearer code
@@ -143,7 +155,7 @@ class MainWindow(QtWidgets.QMainWindow):
         table.setItem(row_position, 7, QtWidgets.QTableWidgetItem("X"))
 
         # add up all the costs
-        self.total_price_value.setText(str(self.add_price()))
+        self.total_price_value.setText(str(round(self.add_price()[0])))
 
     def del_incr_decr_operation(self, row, column):
         if self.purchased_list.item(row, column).text() == 'X':
@@ -189,21 +201,51 @@ class MainWindow(QtWidgets.QMainWindow):
             pass
 
         # add up all the costs
-        self.total_price_value.setText(str(self.add_price()))
+        self.total_price_value.setText(str(round(self.add_price()[0])))
 
     def add_tab(self):
         pass
 
     def add_price(self):
-        price = 0
+        base_price = 0
         for row in range(0, self.purchased_list.rowCount()):
-            price += int(self.purchased_list.item(row, 6).text())
-        print(price)
-        return price
+            base_price += int(self.purchased_list.item(row, 6).text())
+        discounted_price = base_price - (self.discount_percentage / 100) * base_price
+        print(base_price)
+        self.actual_money_value.setText(str(round(discounted_price)))
+        # return multiple value by using list
+        return [base_price, discounted_price]
+
+    def add_price_discount(self, text):
+        text = text[:len(text)-1]
+        print(text)
+        self.discount_percentage = int(text)
+        self.actual_money_value.setText(str(round(self.add_price()[1])))
+
+    def load_product_list(self, row):
+        print(row)
+        for i in range(0, row):
+            # self.product_list.setItem(0, 0, QtWidgets.QTableWidgetItem(self.data_csv["name"][1]))
+            self.product_list.setItem(i, 0, QtWidgets.QTableWidgetItem(str(self.data_csv["code"][i])))
+            self.product_list.setItem(i, 1, QtWidgets.QTableWidgetItem(self.data_csv["name"][i]))
+            self.product_list.setItem(i, 2, QtWidgets.QTableWidgetItem(str(self.data_csv["price"][i])))
+
+    def select_product_list(self, row, column):
+        # this part of the code need to be optimized by using static variable like c++
+        print(self.already_added_row)
+        if row in self.already_added_row:
+            index = self.already_added_row.index(row)
+            amount = int(self.purchased_list.item(index, 3).text()) + 1
+            self.purchased_list.setItem(index, 3, QtWidgets.QTableWidgetItem(str(amount)))
+        else:
+            self.already_added_row.append(row)
+            code = str(self.data_csv["code"][row])
+            name = str(self.data_csv["name"][row])
+            price = str(self.data_csv["price"][row])
+            self.insert_item_to_table(self.purchased_list, code, name, price)
 
 
-
-# MAIN CODE HERE
+# MAIN CODE HERE ------------------------------------------------------------------------------------------------------
 app = QtWidgets.QApplication(sys.argv)
 w = MainWindow()
 w.show()
