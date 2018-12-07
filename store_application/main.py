@@ -1,14 +1,13 @@
 ﻿'''
-Created on Nov 15, 2018
+Created on Dec 3, 2018
 
 @author: USER
 '''
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 import os
 import csv
-
 
 import matplotlib
 matplotlib.use("Qt5Agg")
@@ -65,7 +64,7 @@ class Login(QtWidgets.QDialog):
         self.button.clicked.connect(self.on_click)
 
         self.show()
-        
+ 
     def on_click(self):  
         self.close()
         list_json = read_json()
@@ -81,7 +80,6 @@ class Login(QtWidgets.QDialog):
             self.error = QtWidgets.QErrorMessage()
             self.error.showMessage('Tên đăng nhập và mật khẩu chưa đúng !')
             self.error.setWindowTitle('Error')
-                
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -90,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setup_ui(self)
 
     def setup_ui(self, MainWindow):
-	MainWindow.setWindowTitle('Cửa hàng chính')
+        MainWindow.setWindowTitle('Cửa hàng chính')
         # MainWindow.resize(800, 600)
         MainWindow.setFixedSize(800, 600)
 
@@ -169,8 +167,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu_bar.addAction(self.doi_tac.menuAction())
         self.menu_bar.addAction(self.so_quy.menuAction())
         self.menu_bar.addAction(self.bao_cao.menuAction())
-     
-     
+   
     def show_win1(self):
         self.win1 = Window_1()
         self.win1.show()
@@ -191,7 +188,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.win11 = Window_11()
         self.win11.show()
 
-class Window_1(QtWidgets.QDialog):
+
+class Window_1(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()  
         
@@ -219,8 +217,9 @@ class Window_1(QtWidgets.QDialog):
     def add(self):
         self.adding = Add()
         self.adding.show()
+        
 
-class Window_2(QtWidgets.QDialog):
+class Window_2(QtWidgets.QMainWindow):
     def __init__(self):
         
         super().__init__()
@@ -252,7 +251,7 @@ class Window_2(QtWidgets.QDialog):
             cur = con.cursor()
             cur.execute("INSERT INTO data(gia_moi)"
                         "VALUES('%s')" %(''.join(gia_moi)))'''
-
+                    
 class Window_9(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
@@ -336,6 +335,7 @@ class Window_9(QtWidgets.QDialog):
         else:
             self.button.setEnabled(False)  
      '''
+                      
 class Window_10(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
@@ -424,6 +424,7 @@ class Window_10(QtWidgets.QDialog):
         else:
             self.button.setEnabled(False)  
      '''
+
 class Window_11(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -443,6 +444,7 @@ class Window_11(QtWidgets.QMainWindow):
         button.resize(100,100)
         
         self.show() 
+        
 class Add(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
@@ -493,7 +495,8 @@ class Add(QtWidgets.QDialog):
         
     def upload_hinh(self):
         self.image = QFileDialog.getOpenFileName(None,'OpenFile','',"Image file(*.jpg *gif *.png)")
-
+        
+                
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     ex = Login()
