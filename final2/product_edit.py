@@ -48,8 +48,8 @@ class product_edit(QDialog):
         self.line_edit4.setGeometry(200, 250, 200, 30)
         self.line_edit4.setText(self.image)
 
-        self.button_1 = QtWidgets.QPushButton('Get',self)
-        self.button_1.setGeometry(410, 250, 50, 30)
+        # self.button_1 = QtWidgets.QPushButton('Get',self)
+        # self.button_1.setGeometry(410, 250, 50, 30)
         # self.button_1.clicked.connect(self.get_image)
         
         self.l5 = QtWidgets.QLabel(self)

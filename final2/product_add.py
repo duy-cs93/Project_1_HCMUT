@@ -82,17 +82,19 @@ class product_add(QDialog):
         elif self.line_edit6.text() == '':
             if warehouse_count == 0:
                 warehouse_db.insert(self.line_edit1.text(),0)
-            self.desPath = 'C:/Users/NguyenDucHuy/Desktop/final/images/' +  self.line_edit4.text() 
-            shutil.copyfile(self.imagePath,self.desPath)
+            if self.line_edit4.text() != '':
+                self.desPath = 'C:/Users/DELL/Documents/pycharm/final/images/' +  self.line_edit4.text()
+                shutil.copyfile(self.imagePath,self.desPath)
             product_db.insert(self.line_edit1.text(),self.line_edit2.text(),self.line_edit3.text(),self.line_edit4.text(),self.line_edit5.text(),0,self.line_edit7.text())
             self.error = success_form()
             self.error.show()
             self.close()
-        else: 
+        else:
             if warehouse_count == 0:
                 warehouse_db.insert(self.line_edit1.text(),0)
-            self.desPath = 'C:/Users/NguyenDucHuy/Desktop/final/images/' +  self.line_edit4.text() 
-            shutil.copyfile(self.imagePath,self.desPath)
+            if self.line_edit4.text() != '':
+                self.desPath = 'C:/Users/DELL/Documents/pycharm/final/images/' +  self.line_edit4.text()
+                shutil.copyfile(self.imagePath,self.desPath)
             product_db.insert(self.line_edit1.text(),self.line_edit2.text(),self.line_edit3.text(),self.line_edit4.text(),self.line_edit5.text(),int(self.line_edit6.text()),self.line_edit7.text())
             self.error = success_form()
             self.error.show()

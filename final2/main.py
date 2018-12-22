@@ -218,6 +218,9 @@ class MainWindow(QMainWindow):
         self.menubar.addAction(self.kho_hang.menuAction())
 
         # ADD BUTTON --------------------------------------------------------------------------------------------------
+        self.refresh_btn = QtWidgets.QPushButton("Refresh", self)
+        self.refresh_btn.move(900, 30)
+        self.refresh_btn.clicked.connect(self.refresh1)
         self.search_btn = QtWidgets.QPushButton(self)
         self.search_btn.setIcon(QtGui.QIcon("magnifying glass.png"))
         self.search_btn.move(310, 30)
@@ -389,9 +392,9 @@ class MainWindow(QMainWindow):
         self.employee_value.currentTextChanged.connect(self.choose_employee)
         self.customer_value.currentTextChanged.connect(self.choose_customer)
 
-        # self.timer = QtCore.QTimer()
-        # self.timer.timeout.connect(self.refresh)
-        # self.timer.start(1000)
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.refresh)
+        self.timer.start(1000)
 
     # DEFINE TRIGGERED EVENTS -----------------------------------------------------------------------------------------
     def search_trigger(self):
@@ -615,6 +618,8 @@ class MainWindow(QMainWindow):
             print(self.bill_code)
 
             self.test = invoice.Invoice(self.purchased_list,
+                                        self.onshift_emp,
+                                        self.current_cus,
                                         self.bill_code,
                                         self.employee_code,
                                         bill_date,
@@ -647,14 +652,22 @@ class MainWindow(QMainWindow):
             var3 = int(var1[0]['inventory_number']) - product_count
             warehouse_db.update(product_code, var3, product_code)
 
-    # def refresh(self):
+    def refresh(self):
+        self.product_list_db, self.product_amount_entry = product_db.select_all()
         # self.customer_list, self.customer_amount_entry = customer_db.select_all()
-        # # self.employee_list, self.employee_amount_entry = employee_db.select_all()
-        # self.product_list, self.product_amount_entry = product_db.select_all()
-        # self.warehouse_list_db, self.warehouse_amount_entry = warehouse_db.select_all()
+        # for row in range(self.product_amount_entry):
+        #     self.product_list.removeRow(row)
+        self.load_product_from_db()
+        # self.customer_value.clear()
         # for row2 in range(self.customer_amount_entry):
         #     self.customer_value.addItem(self.customer_list[row2]["customer_name"])
+        # self.customer_value.setFixedSize(150, 100)
 
+    def refresh1(self):
+        self.customer_list, self.customer_amount_entry = customer_db.select_all()
+        self.customer_value.clear()
+        for row2 in range(self.customer_amount_entry):
+            self.customer_value.addItem(self.customer_list[row2]["customer_name"])
 
     def show_list_c(self):
         self.list_c = customer_list.customer_list()
