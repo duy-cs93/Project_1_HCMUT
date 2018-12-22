@@ -12,6 +12,8 @@ class Invoice(QtWidgets.QDialog):
 
     def __init__(self,
                  purchased_list,
+                 employee_name,
+                 customer_name,
                  bill_code,
                  employee_code,
                  bill_date,
@@ -34,6 +36,8 @@ class Invoice(QtWidgets.QDialog):
         self.total_price = total_price
         self.discount = discount
         self.actual_price = actual_price
+        self.employee_name = employee_name
+        self.customer_name = customer_name
 
         # self.bill, self.bill_count = bill_        db.select_all()
         # self.product, self.product_type = bill_detail_db.select_all()
@@ -65,9 +69,11 @@ class Invoice(QtWidgets.QDialog):
         self.show()
 
     def print_invoice(self):
-        self.invoice.insertPlainText("     De phu nu lai xe\n      la mot toi ac!\n\n")
+        self.invoice.insertPlainText("      Hoa don ban le\n")
+        self.invoice.insertPlainText("Nhan vien: %s\n" % self.employee_name)
+        self.invoice.insertPlainText("Khach hang: %s\n" % self.customer_name)
         self.invoice.insertPlainText("--------------------------\n")
-        self.invoice.insertPlainText("   Hoa don " + self.bill_code)
+        self.invoice.insertPlainText("   Ma hoa don " + self.bill_code)
         for i in range(0, self.purchased_list.rowCount()):
             self.invoice.insertPlainText("\n\n\n%s  %s  x%s\n" % (self.purchased_list.item(i, 1).text(),
                                                                   self.purchased_list.item(i, 2).text(),
