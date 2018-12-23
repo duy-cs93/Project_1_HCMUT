@@ -107,6 +107,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.title = "Quản lý bán hàng"
+        self.setStyleSheet('background-color:#1effff')
         self.width = 1050
         self.height = 600
         # self.amount_of_products = 0  # this variable is used for counting the number of purchased item
@@ -163,7 +164,8 @@ class MainWindow(QMainWindow):
         #create menubar
         self.menubar = QtWidgets.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
-
+        self.menubar.setStyleSheet('background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,stop:0 lightgray,stop:1 darkgray)')
+        
         self.thoat = QtWidgets.QMenu("Thoát", self.menubar)
         exitApp = QAction("&Exit", self)
         exitApp.setShortcut("Ctrl+Q")
@@ -220,6 +222,8 @@ class MainWindow(QMainWindow):
         # ADD BUTTON --------------------------------------------------------------------------------------------------
         self.refresh_btn = QtWidgets.QPushButton("Refresh", self)
         self.refresh_btn.move(900, 30)
+        self.refresh_btn.setStyleSheet('color:#fafafa;font-size =15px;font: bold 14px;background-color:qlineargradient(spread:pad, x1:0.45,y1:0.3695,x2:0.426\
+        ,y2:0,stop:0 rgba(255,170,0,228),stop:1 rgba(255,255,255,255));border-radius:10px;border:none')
         self.refresh_btn.clicked.connect(self.refresh1)
         self.search_btn = QtWidgets.QPushButton(self)
         self.search_btn.setIcon(QtGui.QIcon("magnifying glass.png"))
@@ -235,28 +239,35 @@ class MainWindow(QMainWindow):
         # self.add_tab_btn.resize(70, 30)
 
         self.charge_btn = QtWidgets.QPushButton("Thanh toán", self)
+        self.charge_btn.setStyleSheet('color:#fafafa;font-size =15px;font: bold 14px;background-color:qlineargradient(spread:pad, x1:0.45,y1:0.3695,x2:0.426\
+        ,y2:0,stop:0 rgba(255,170,0,228),stop:1 rgba(255,255,255,255));border-radius:10px;border:none')
         self.charge_btn.move(800, 530)
         self.charge_btn.resize(100, 30)
 
         # ADD LABEL ---------------------------------------------------------------------------------------------------
         self.total_price_lbl = QtWidgets.QLabel("Tổng giá: ", self)
         self.total_price_lbl.move(800, 380)
+        self.total_price_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.total_price_value = QtWidgets.QLabel(self)
         self.total_price_value.move(900, 380)
 
         self.discount_lbl = QtWidgets.QLabel("Giảm giá: ", self)
         self.discount_lbl.move(800, 430)
+        self.discount_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.discount_value = QtWidgets.QComboBox(self)
         self.discount_value.move(900, 430)
+        self.discount_value.setStyleSheet('background-color:white')
         self.discount_value.addItems(["0%", "15%", "30%", "50%"])
 
         self.employee_lbl = QtWidgets.QLabel("Nhân viên: ", self)
         self.employee_lbl.move(800, 100)
+        self.employee_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.chosen_employee = QtWidgets.QLineEdit(self)
         self.chosen_employee.move(870, 110)
         self.chosen_employee.setReadOnly(True)
         self.chosen_employee.setFixedSize(150, 20)
         self.employee_value = QtWidgets.QListWidget(self)
+        self.employee_value.setStyleSheet('background-color:white')
         self.employee_value.move(870, 130)
         for row in range(self.employee_amount_entry):
             self.employee_value.addItem(self.employee_list[row]["employee_name"])
@@ -264,11 +275,13 @@ class MainWindow(QMainWindow):
 
         self.customer = QtWidgets.QLabel("Khách hàng: ", self)
         self.customer.move(800, 250)
+        self.customer.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.chosen_customer = QtWidgets.QLineEdit(self)
         self.chosen_customer.move(870, 260)
         self.chosen_customer.setReadOnly(True)
         self.chosen_customer.setFixedSize(150, 20)
         self.customer_value = QtWidgets.QListWidget(self)
+        self.customer_value.setStyleSheet('background-color:white')
         self.customer_value.move(870, 280)
         for row2 in range(self.customer_amount_entry):
             self.customer_value.addItem(self.customer_list[row2]["customer_name"])
@@ -276,6 +289,7 @@ class MainWindow(QMainWindow):
 
         self.actual_money = QtWidgets.QLabel("Tiền phải trả: ", self)
         self.actual_money.move(800, 480)
+        self.actual_money.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.actual_money_value = QtWidgets.QLabel(self)
         self.actual_money_value.move(900, 480)
 
@@ -292,10 +306,12 @@ class MainWindow(QMainWindow):
         # ADD EDIT BOX ------------------------------------------------------------------------------------------------
         self.search_box = QtWidgets.QLineEdit(self)
         self.search_box.move(30, 30)
+        self.search_box.setStyleSheet('background-color:white')
         self.search_box.resize(280, 25)
 
         # ADD TABLE ---------------------------------------------------------------------------------------------------
         self.purchased_list = QtWidgets.QTableWidget(self)
+        self.purchased_list.setStyleSheet('background-color:white')
         self.purchased_list.setRowCount(0)
         self.purchased_list.setColumnCount(10)
         self.purchased_list.move(30, 100)
@@ -348,6 +364,7 @@ class MainWindow(QMainWindow):
 
         # CREATE TABLE OF PRODUCTS ------------------------------------------------------------------------------------
         self.product_list = QtWidgets.QTableWidget(self)
+        self.product_list.setStyleSheet('background-color:white')
         self.product_list.setRowCount(self.product_amount_entry)
         self.product_list.setColumnCount(5)
         self.product_list.move(30, 360)

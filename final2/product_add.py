@@ -12,59 +12,86 @@ import ntpath
 
 class product_add(QDialog):
     def __init__(self):
-       	super().__init__()
+        super().__init__()
         self.setWindowTitle('Thông tin sản phẩm mới')
+        self.setStyleSheet('background-color:#1effff')
         self.init_ui()
         
     def init_ui(self):       
         self.l1 = QtWidgets.QLabel(self)
         self.l1.setText('Mã sản phẩm')
         self.l1.move(110, 110)
+        self.l1.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit1 = QtWidgets.QLineEdit(self)
-        self.line_edit1.setGeometry(200, 100, 200, 30)
+        self.line_edit1.setGeometry(210, 105, 200, 30)
+        self.line_edit1.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
         
         self.l2 = QtWidgets.QLabel(self)
         self.l2.setText('Tên sản phẩm')
         self.l2.move(110, 160)
+        self.l2.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit2 = QtWidgets.QLineEdit(self)
-        self.line_edit2.setGeometry(200, 150, 200, 30)
+        self.line_edit2.setGeometry(210, 155, 200, 30)
+        self.line_edit2.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
         
         self.l3 = QtWidgets.QLabel(self)
         self.l3.setText('Danh mục')
         self.l3.move(110, 210)
+        self.l3.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit3 = QtWidgets.QLineEdit(self)
-        self.line_edit3.setGeometry(200, 200, 200, 30)
+        self.line_edit3.setGeometry(210, 205, 200, 30)
+        self.line_edit3.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
         
         self.l4 = QtWidgets.QLabel(self)
         self.l4.setText('Hình ảnh')
         self.l4.move(110, 260)
+        self.l4.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit4 = QtWidgets.QLineEdit(self)
-        self.line_edit4.setGeometry(200, 250, 200, 30)
+        self.line_edit4.setGeometry(210, 255, 200, 30)
+        self.line_edit4.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
 
         self.button_1 = QtWidgets.QPushButton('Get',self)
-        self.button_1.setGeometry(410, 250, 50, 30)
+        self.button_1.setGeometry(425, 255, 50, 30)
+        self.button_1.setStyleSheet('color:#fafafa;font-size =15px;font: bold 14px;background-color:qlineargradient(spread:pad, x1:0.45,y1:0.3695,x2:0.426\
+        ,y2:0,stop:0 rgba(255,170,0,228),stop:1 rgba(255,255,255,255));border-radius:10px;border:none')
         self.button_1.clicked.connect(self.get_image)
         
         self.l5 = QtWidgets.QLabel(self)
         self.l5.setText('Nhãn hiệu')
         self.l5.move(110, 310)
+        self.l5.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit5 = QtWidgets.QLineEdit(self)
-        self.line_edit5.setGeometry(200, 300, 200, 30)
+        self.line_edit5.setGeometry(210, 305, 200, 30)
+        self.line_edit5.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
         
         self.l6 = QtWidgets.QLabel(self)
         self.l6.setText('Giá')
         self.l6.move(110, 360)
+        self.l6.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit6 = QtWidgets.QLineEdit(self)
-        self.line_edit6.setGeometry(200, 350, 200, 30)
+        self.line_edit6.setGeometry(210, 355, 200, 30)
+        self.line_edit6.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
 
         self.l7 = QtWidgets.QLabel(self)
         self.l7.setText('Mô tả')
         self.l7.move(110, 410)
+        self.l7.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.line_edit7 = QtWidgets.QLineEdit(self)
-        self.line_edit7.setGeometry(200, 400, 200, 30)
+        self.line_edit7.setGeometry(210, 405, 200, 30)
+        self.line_edit7.setStyleSheet('background-color:#f7f7f7; color:#8e8e8e;padding-top:0px;\
+        font-size:10px;padding-left:10px;font: bold 12px')
         
         self.button = QtWidgets.QPushButton('Lưu',self)
-        self.button.setGeometry(200, 450, 100, 30)
+        self.button.setGeometry(200, 455, 100, 30)
+        self.button.resize(80,30)
+        self.button.setStyleSheet('background-color:#4e4e4e; color:#fafafa ; font-size =15px;\
+         border = 1px solid #4e4e4e;border-radius:10px;font: bold 14px')
         self.button.clicked.connect(self.insert)
     
     def insert(self):
