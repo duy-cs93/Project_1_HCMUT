@@ -1,7 +1,7 @@
 import pymysql.cursors  
 
 
-# Hàm trả về một connection.
+# HÃ m tráº£ vá»� má»™t connection.
 def get_connection():
     # connect to database
 	connection = pymysql.connect(host='127.0.0.1',

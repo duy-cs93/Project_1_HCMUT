@@ -1,13 +1,23 @@
 ﻿'''
-Created on Nov 15, 2018
+Created on Dec 3, 2018
 
 @author: USER
 '''
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 import os
 import csv
+
+import matplotlib
+matplotlib.use("Qt5Agg")
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import random
+from store_application.lib import PlotCanvas
+from store_application.lib import read_json
+from store_application.lib import MyTable
 
 
 class Login(QtWidgets.QDialog):
@@ -28,23 +38,23 @@ class Login(QtWidgets.QDialog):
         self.setFixedSize(self.width, self.height)
         
         #create label 1
-        l1 = QtWidgets.QLabel(self)       
-        l1.setText('Tên đăng nhập')
-        l1.move(30, 50)
+        self.l1 = QtWidgets.QLabel(self)       
+        self.l1.setText('Tên đăng nhập')
+        self.l1.move(30, 50)
         # Create ID text box 1
-        user_text = QtWidgets.QLineEdit(self)
-        user_text.move(30, 80)
-        user_text.resize(220, 25)
+        self.user_text = QtWidgets.QLineEdit(self)
+        self.user_text.move(30, 80)
+        self.user_text.resize(220, 25)
         
         #create label 2
-        l2 = QtWidgets.QLabel(self)
-        l2.setText('Mật khẩu')
-        l2.move(30, 120)
+        self.l2 = QtWidgets.QLabel(self)
+        self.l2.setText('Mật khẩu')
+        self.l2.move(30, 120)
         # Create password text box 2
-        password_text = QtWidgets.QLineEdit(self)
-        password_text.setEchoMode(QtWidgets.QLineEdit.Password)
-        password_text.move(30, 150)
-        password_text.resize(220, 25)
+        self.password_text = QtWidgets.QLineEdit(self)
+        self.password_text.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.password_text.move(30, 150)
+        self.password_text.resize(220, 25)
         
         # Create button in the window
         self.button = QtWidgets.QPushButton('Quản lý', self)
@@ -54,12 +64,22 @@ class Login(QtWidgets.QDialog):
         self.button.clicked.connect(self.on_click)
 
         self.show()
-        
+ 
     def on_click(self):  
         self.close()
-        self.main = MainWindow()
-        self.main.show()
-                
+        list_json = read_json()
+        flag = False
+        for item in list_json:
+            for i in list_json[item]:
+                if i[0] == self.user_text.text() and i[1] == self.password_text.text():
+                    flag = True         
+        if flag:
+            self.main = MainWindow()
+            self.main.show()
+        else:
+            self.error = QtWidgets.QErrorMessage()
+            self.error.showMessage('Tên đăng nhập và mật khẩu chưa đúng !')
+            self.error.setWindowTitle('Error')
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -118,8 +138,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.khach_hang = QtWidgets.QAction('Khách hàng', self)
         self.khach_hang.triggered.connect(self.show_win9)
 
-        self.nha_cung_cap = QtWidgets.QAction('Nhà cung cấp', self)
-        #self.nha_cung_cap.triggered.connect(self.show_win10)
+        self.nhan_vien = QtWidgets.QAction('Nhân viên', self)
+        self.nhan_vien.triggered.connect(self.show_win10)
+        
+        self.tuan = QtWidgets.QAction('Tuần rồi',self)
+        self.tuan.triggered.connect(self.show_win11)
+        
+        '''self.thang = QtWidgets.QAction('Trong tháng',self)
+        self.thang.triggered.connect(self.show_win12)'''
         
         self.hang_hoa.addAction(self.danh_muc)
         self.hang_hoa.addAction(self.thiet_lap_gia)
@@ -130,24 +156,296 @@ class MainWindow(QtWidgets.QMainWindow):
         self.giao_dich.addAction(self.tra_hang_nhap)
         self.giao_dich.addAction(self.xuat_huy)
         self.doi_tac.addAction(self.khach_hang)
-        self.doi_tac.addAction(self.nha_cung_cap)
+        self.doi_tac.addAction(self.nhan_vien)
+        
+        self.bao_cao.addAction(self.tuan)
+        #self.bao_cao.addAction(self.thang) 
+        
         self.menu_bar.addAction(self.quan_ly.menuAction())
         self.menu_bar.addAction(self.hang_hoa.menuAction())
         self.menu_bar.addAction(self.giao_dich.menuAction())
         self.menu_bar.addAction(self.doi_tac.menuAction())
         self.menu_bar.addAction(self.so_quy.menuAction())
         self.menu_bar.addAction(self.bao_cao.menuAction())
-     
-     
+   
     def show_win1(self):
         self.win1 = Window_1()
         self.win1.show()
             
+    def show_win2(self):
+        self.win1 = Window_2()
+        self.win1.show()
+        
     def show_win9(self):
         self.win9 = Window_9()
         self.win9.show()
+        
+    def show_win10(self):
+        self.win10 = Window_10()
+        self.win10.show()
+        
+    def show_win11(self):
+        self.win11 = Window_11()
+        self.win11.show()
 
-class Window_1(QtWidgets.QDialog):
+
+class Window_1(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()  
+        
+        self.setFixedSize(700,400)
+        self.form_widget = MyTable(10, 5)
+        self.setCentralWidget(self.form_widget)
+        self.form_widget.setHorizontalHeaderLabels(["Mã hàng", "Tên hàng", "Giá bán", "Giá vốn", "Tồn kho"])
+     
+     
+        self.load = QtWidgets.QPushButton('Nhập file',self)
+        self.load.move(600,50)
+        self.load.resize(60,35)
+        self.load.clicked.connect(self.form_widget.open_sheet)
+     
+        self.export = QtWidgets.QPushButton('Xuất file',self)
+        self.export.move(600,100)
+        self.export.resize(60,35)
+        self.export.clicked.connect(self.form_widget.save_sheet)
+        
+        self.btn_add = QtWidgets.QPushButton('Thêm mới',self)
+        self.btn_add.move(600,150)
+        self.btn_add.resize(60,35)
+        self.btn_add.clicked.connect(self.add)
+        
+    def add(self):
+        self.adding = Add()
+        self.adding.show()
+        
+
+class Window_2(QtWidgets.QMainWindow):
+    def __init__(self):
+        
+        super().__init__()
+        
+        self.setFixedSize(600,400)
+        self.form_widget_2 = MyTable(10,4)
+        self.setCentralWidget(self.form_widget_2)
+        col_headers = ['Mã hàng hóa','Tên hàng','Giá cũ','Giá mới']
+        self.form_widget_2.setHorizontalHeaderLabels(col_headers)
+                      
+        self.btn_save = QtWidgets.QPushButton('Lưu',self)
+        # !!!!!!!!!!!!!!! important
+        '''self.btn_save.clicked.connect(self.insert_data())'''
+        self.btn_save.move(100,340)
+        self.btn_save.resize(60,35)
+        #self.btn_save.clicked.connect(self.save)
+        
+        self.btn_load = QtWidgets.QPushButton('Xuất file',self)
+        self.btn_load.move(200,340)
+        self.btn_load.resize(60,35)
+        self.btn_load.clicked.connect(self.form_widget_2.save_sheet)
+
+    '''                
+    def insert_data(self):
+        gia_moi = [self.table.item(row, 2).text() for row in range(self.table.rowCount())]
+        
+        con = mdb.connect('localhost', 'root', '', 'pyqt5')
+        with con:
+            cur = con.cursor()
+            cur.execute("INSERT INTO data(gia_moi)"
+                        "VALUES('%s')" %(''.join(gia_moi)))'''
+                    
+class Window_9(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        
+    def init_ui(self):
+        
+        self.l1 = QtWidgets.QLabel(self)
+        self.l1.setText('Tên khách hàng')
+        self.l1.move(110, 110)
+        self.line_edit1 = QtWidgets.QLineEdit(self)
+        self.line_edit1.setGeometry(200, 100, 200, 30)
+        #self.line_edit1.textChanged.connect(self.newText)
+        
+        self.l2 = QtWidgets.QLabel(self)
+        self.l2.setText('Địa chỉ')
+        self.l2.move(110, 160)
+        self.line_edit2 = QtWidgets.QLineEdit(self)
+        self.line_edit2.setGeometry(200, 150, 200, 30)
+        #self.line_edit2.textChanged.connect(self.newText)
+        
+        self.l3 = QtWidgets.QLabel(self)
+        self.l3.setText('Số điện thoại')
+        self.l3.move(110, 210)
+        self.line_edit3 = QtWidgets.QLineEdit(self)
+        self.line_edit3.setGeometry(200, 200, 200, 30)
+        #self.line_edit3.textChanged.connect(self.newText)
+        
+        self.l4 = QtWidgets.QLabel(self)
+        self.l4.setText('Giói tính')
+        self.l4.move(110, 260)
+        self.line_edit4 = QtWidgets.QLineEdit(self)
+        self.line_edit4.setGeometry(200, 250, 200, 30)
+        #self.line_edit4.textChanged.connect(self.newText)
+        
+        self.l5 = QtWidgets.QLabel(self)
+        self.l5.setText('Giới tính')
+        self.l5.move(110, 310)
+        self.line_edit5 = QtWidgets.QLineEdit(self)
+        self.line_edit5.setGeometry(200, 300, 200, 30)
+        #self.line_edit5.textChanged.connect(self.newText)
+        
+        self.l6 = QtWidgets.QLabel(self)
+        self.l6.setText('Ngày tham gia')
+        self.l6.move(110, 360)
+        self.line_edit6 = QtWidgets.QLineEdit(self)
+        self.line_edit6.setGeometry(200, 350, 200, 30)
+        #self.line_edit6.textChanged.connect(self.newText)
+        
+        self.button = QtWidgets.QPushButton('Lưu',self)
+        #self.button.clicked.connect(self.insert_data())
+        self.button.setGeometry(200, 400, 100, 30)
+    '''  
+    def insert_data(self):
+        con = mdb.connect(host="localhost",user="user", passwd="password",db="testdb")
+        
+        with con:
+            cur = con.cursor()
+            cur.execute("INSERT INTO pyqt5data(name, email, phone)
+                           VALUES (%s, %s, %s)", 
+                           ( self.line_edit1.text(),
+                             self.line_edit2.text(),
+                             self.line_edit3.text(),
+                             self.line_edit4.text(),
+                             self.line_edit5.text(),
+                             self.line_edit6.text() )
+                       )            
+            cur.close()
+        self.line_edit1.setText('')
+        self.line_edit2.setText('')
+        self.line_edit3.setText('')
+        self.line_edit4.text()
+        self.line_edit5.text()
+        self.line_edit6.text()
+        self.init_ui() 
+        
+    def newText(self):
+        if self.line_edit1.text() and self.line_edit2.text() and self.line_edit3.text() and\
+        self.line_edit4.text() and self.line_edit5.text() and self.line_edit6.text():
+            self.button.setEnabled(True)
+        else:
+            self.button.setEnabled(False)  
+     '''
+                      
+class Window_10(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        
+    def init_ui(self):
+        
+        self.l1 = QtWidgets.QLabel(self)
+        self.l1.setText('Tên nhân viên')
+        self.l1.move(110, 110)
+        self.line_edit1 = QtWidgets.QLineEdit(self)
+        self.line_edit1.setGeometry(200, 100, 200, 30)
+        
+        
+        self.l2 = QtWidgets.QLabel(self)
+        self.l2.setText('Giới tính')
+        self.l2.move(110, 160)
+        self.line_edit2 = QtWidgets.QLineEdit(self)
+        self.line_edit2.setGeometry(200, 150, 200, 30)
+        
+        
+        self.l3 = QtWidgets.QLabel(self)
+        self.l3.setText('Địa chỉ')
+        self.l3.move(110, 210)
+        self.line_edit3 = QtWidgets.QLineEdit(self)
+        self.line_edit3.setGeometry(200, 200, 200, 30)
+        
+        self.l4 = QtWidgets.QLabel(self)
+        self.l4.setText('Số điện thoại')
+        self.l4.move(110, 260)
+        self.line_edit4 = QtWidgets.QLineEdit(self)
+        self.line_edit4.setGeometry(200, 250, 200, 30)
+        
+        self.l5 = QtWidgets.QLabel(self)
+        self.l5.setText('DOB')
+        self.l5.move(110, 310)
+        self.line_edit5 = QtWidgets.QLineEdit(self)
+        self.line_edit5.setGeometry(200, 300, 200, 30)
+        
+        self.l6 = QtWidgets.QLabel(self)
+        self.l6.setText('FWD')
+        self.l6.move(110, 360)
+        self.line_edit6 = QtWidgets.QLineEdit(self)
+        self.line_edit6.setGeometry(200, 350, 200, 30)
+        
+        self.l7 = QtWidgets.QLabel(self)
+        self.l7.setText('Lương')
+        self.l7.move(110, 410)
+        self.line_edit7 = QtWidgets.QLineEdit(self)
+        self.line_edit7.setGeometry(200, 400, 200, 30)
+        
+        self.button = QtWidgets.QPushButton('Lưu',self)
+        self.button.setGeometry(200, 450, 100, 30)
+        #self.button.clicked.connect(self.insert_data())
+    '''  
+    def insert_data(self):
+        con = mdb.connect(host="localhost",user="user", passwd="password",db="testdb")
+        
+        with con:
+            cur = con.cursor()
+            cur.execute("INSERT INTO pyqt5data(name, email, phone)
+                           VALUES (%s, %s, %s)", 
+                           ( self.line_edit1.text(),
+                             self.line_edit2.text(),
+                             self.line_edit3.text(),
+                             self.line_edit4.text(),
+                             self.line_edit5.text(),
+                             self.line_edit6.text(),
+                             self.line_edit7.text() )
+                       )            
+            cur.close()
+        self.line_edit1.setText('')
+        self.line_edit2.setText('')
+        self.line_edit3.setText('')
+        self.line_edit4.text()
+        self.line_edit5.text()
+        self.line_edit6.text()
+        self.line_edit7.text()
+        self.init_ui() 
+        
+    def newText(self):
+        if self.line_edit1.text() and self.line_edit2.text() and self.line_edit3.text() and\
+        self.line_edit4.text() and self.line_edit5.text() and self.line_edit6.text()\
+        and self.line_edit7.text():
+            self.button.setEnabled(True)
+        else:
+            self.button.setEnabled(False)  
+     '''
+
+class Window_11(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.left = 100
+        self.top = 100
+        self.width = 640
+        self.height = 400
+        self.init_ui()
+        
+    def init_ui(self):
+        self.setGeometry(self.left, self.top, self.width, self.height)
+        
+        m = PlotCanvas(self,width=5,height=4)
+        
+        button = QtWidgets.QPushButton('Test',self)
+        button.move(500,0)
+        button.resize(100,100)
+        
+        self.show() 
+        
+class Add(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -184,7 +482,6 @@ class Window_1(QtWidgets.QDialog):
         self.line_edit5 = QtWidgets.QLineEdit(self)
         self.line_edit5.setGeometry(200, 300, 200, 30)
         
-        
         self.l5 = QtWidgets.QLabel(self)
         self.l5.setText('Hình')
         self.l5.move(110, 360)
@@ -198,90 +495,8 @@ class Window_1(QtWidgets.QDialog):
         
     def upload_hinh(self):
         self.image = QFileDialog.getOpenFileName(None,'OpenFile','',"Image file(*.jpg *gif *.png)")
-
-
-class Window_2(QtWidgets.QDialog):
-    def __init__(self):
-        super().__init__()
-        self.init_ui()
         
-    def init_ui(self):
-    
-        self.table = QtWidgets.QTableWidget(self)
-        self.table.setGeometry(QtCore.QRect(10,10,600,350))
-        self.table.setRowCount(10)
-        self.table.setColumnCount(5)
-        col_headers = ['Mã hàng hóa','Tên hàng','Giá bán','Giá vốn','Tồn kho']
-        self.table.setHorizontalHeaderLabels(col_headers)
-        
-        self.btn_load = QtWidgets.QPushButton('Xuất file',self)
-        self.btn_load.move(200,400)
-        self.btn_load.clicked.connect(self.export_csv)
-        
-    def export_csv(self):
-        path = QFileDialog.getSaveFileName(self, 'Save CSV', os.getenv('HOME'),'CSV(*.csv')
-        if path[0] != '':
-            with open(path[0],newline ='') as csv_file:
-                writer = csv.writer(csv_file,dialect ='excel')
-                for row in range(self.rowCount()):
-                    row_data  = []
-                    for column in range(self.colorCount()):
-                        item = self.item(row , column)
-                        if item is not None:
-                            row_data.append(item.text())
-                        else:
-                            row_data.append('')
-                    writer.writerow(row_data)
-
-class Window_9(QtWidgets.QDialog):
-    def __init__(self):
-        super().__init__()
-        self.init_ui()
-        
-    def init_ui(self):
-        
-        self.l1 = QtWidgets.QLabel(self)
-        self.l1.setText('Tên khách hàng')
-        self.l1.move(110, 110)
-        self.line_edit1 = QtWidgets.QLineEdit(self)
-        self.line_edit1.setGeometry(200, 100, 200, 30)
-        
-        
-        self.l2 = QtWidgets.QLabel(self)
-        self.l2.setText('Địa chỉ')
-        self.l2.move(110, 160)
-        self.line_edit2 = QtWidgets.QLineEdit(self)
-        self.line_edit2.setGeometry(200, 150, 200, 30)
-        
-        
-        self.l3 = QtWidgets.QLabel(self)
-        self.l3.setText('Số điện thoại')
-        self.l3.move(110, 210)
-        self.line_edit3 = QtWidgets.QLineEdit(self)
-        self.line_edit3.setGeometry(200, 200, 200, 30)
-        
-        self.l3 = QtWidgets.QLabel(self)
-        self.l3.setText('Giói tính')
-        self.l3.move(110, 260)
-        self.line_edit4 = QtWidgets.QLineEdit(self)
-        self.line_edit4.setGeometry(200, 250, 200, 30)
-        
-        self.l4 = QtWidgets.QLabel(self)
-        self.l4.setText('Giới tính')
-        self.l4.move(110, 310)
-        self.line_edit5 = QtWidgets.QLineEdit(self)
-        self.line_edit5.setGeometry(200, 300, 200, 30)
-        
-        self.l5 = QtWidgets.QLabel(self)
-        self.l5.setText('Ngày tham gia')
-        self.l5.move(110, 360)
-        self.line_edit6 = QtWidgets.QLineEdit(self)
-        self.line_edit6.setGeometry(200, 350, 200, 30)
-        
-        self.button = QtWidgets.QPushButton('Lưu',self)
-        self.button.setGeometry(200, 400, 100, 30)
-
-   
+                
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     ex = Login()

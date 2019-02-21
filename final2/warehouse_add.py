@@ -26,7 +26,7 @@ class warehouse_add(QDialog):
         self.line_edit2.setGeometry(200, 150, 200, 30)
         
         self.button = QtWidgets.QPushButton('Lưu',self)
-        self.button.setGeometry(200, 450, 100, 30)
+        self.button.setGeometry(200, 210, 100, 30)
         self.button.clicked.connect(self.insert)
     
     def insert(self):
