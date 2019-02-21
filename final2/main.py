@@ -1,11 +1,13 @@
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QWidget, QPushButton, QAction, QLineEdit, QMessageBox,QLabel,QInputDialog
-from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.Qt import QDialog, QIcon, QDesktopWidget, QPixmap
 from email.charset import QP
 import datetime
+import copy
+from colorama import Fore
+from colorama import Style
 
 from read_json import *
 from MyTable import *
@@ -18,6 +20,7 @@ import product_add, product_list
 import warehouse_add, warehouse_list
 import employee_list, employee_add
 import invoice
+
 
 class Login(QDialog):
  
@@ -107,6 +110,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.title = "Quản lý bán hàng"
+        self.setStyleSheet('background-color:#1effff')
         self.width = 1050
         self.height = 600
         # self.amount_of_products = 0  # this variable is used for counting the number of purchased item
@@ -121,6 +125,7 @@ class MainWindow(QMainWindow):
         self.employee_code = None
         self.customer_code = None
         self.product_list_db, self.product_amount_entry = product_db.select_all()  # get the product list from database
+        self.product_name_list = [self.product_list_db[member]["product_name"] for member in range(self.product_amount_entry)]
         self.warehouse_list_db, self.warehouse_amount_entry = warehouse_db.select_all()
         self.customer_list, self.customer_amount_entry = customer_db.select_all()
         self.employee_list, self.employee_amount_entry = employee_db.select_all()
@@ -142,8 +147,16 @@ class MainWindow(QMainWindow):
         self.payed_money_value = None
         self.change_money = None
         self.change_money_value = None
+
         # Edit box
-        self.search_box = None
+        self.search_box = None  # search box
+        self.model = QtCore.QStringListModel(self)
+        self.model.setStringList([self.product_list_db[member]["product_name"]
+                                  for member in range(self.product_amount_entry)])
+        # print(self.model.stringList())
+        self.completer = QtWidgets.QCompleter(self)
+        self.completer.setModel(self.model)
+
         # Table
         self.purchased_list = None
         self.product_list = None
@@ -163,7 +176,8 @@ class MainWindow(QMainWindow):
         #create menubar
         self.menubar = QtWidgets.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
-
+        self.menubar.setStyleSheet('background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,stop:0 lightgray,stop:1 darkgray)')
+        
         self.thoat = QtWidgets.QMenu("Thoát", self.menubar)
         exitApp = QAction("&Exit", self)
         exitApp.setShortcut("Ctrl+Q")
@@ -220,62 +234,70 @@ class MainWindow(QMainWindow):
         # ADD BUTTON --------------------------------------------------------------------------------------------------
         self.refresh_btn = QtWidgets.QPushButton("Refresh", self)
         self.refresh_btn.move(900, 30)
-        self.refresh_btn.clicked.connect(self.refresh1)
-        self.search_btn = QtWidgets.QPushButton(self)
-        self.search_btn.setIcon(QtGui.QIcon("magnifying glass.png"))
-        self.search_btn.move(310, 30)
-        self.search_btn.resize(25, 25)
-
-        # self.add_product_btn = QtWidgets.QPushButton("Thêm vào", self)
-        # self.add_product_btn.move(800, 100)
-        # self.add_product_btn.resize(70, 30)
-
-        # self.add_tab_btn = QtWidgets.QPushButton("Thêm tab", self)
-        # self.add_tab_btn.move(800, 150)
-        # self.add_tab_btn.resize(70, 30)
+        self.refresh_btn.setStyleSheet('color:#fafafa;font-size =15px;font: bold 14px;background-color:qlineargradient(spread:pad, x1:0.45,y1:0.3695,x2:0.426\
+        ,y2:0,stop:0 rgba(255,170,0,228),stop:1 rgba(255,255,255,255));border-radius:10px;border:none')
+        self.refresh_btn.clicked.connect(self.refresh)
 
         self.charge_btn = QtWidgets.QPushButton("Thanh toán", self)
+        self.charge_btn.setStyleSheet('color:#fafafa;font-size =15px;font: bold 14px;background-color:qlineargradient(spread:pad, x1:0.45,y1:0.3695,x2:0.426\
+        ,y2:0,stop:0 rgba(255,170,0,228),stop:1 rgba(255,255,255,255));border-radius:10px;border:none')
         self.charge_btn.move(800, 530)
         self.charge_btn.resize(100, 30)
 
         # ADD LABEL ---------------------------------------------------------------------------------------------------
         self.total_price_lbl = QtWidgets.QLabel("Tổng giá: ", self)
         self.total_price_lbl.move(800, 380)
+        self.total_price_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.total_price_value = QtWidgets.QLabel(self)
         self.total_price_value.move(900, 380)
 
         self.discount_lbl = QtWidgets.QLabel("Giảm giá: ", self)
         self.discount_lbl.move(800, 430)
+        self.discount_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.discount_value = QtWidgets.QComboBox(self)
         self.discount_value.move(900, 430)
+        self.discount_value.setStyleSheet('background-color:white')
         self.discount_value.addItems(["0%", "15%", "30%", "50%"])
 
         self.employee_lbl = QtWidgets.QLabel("Nhân viên: ", self)
         self.employee_lbl.move(800, 100)
+        self.employee_lbl.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.chosen_employee = QtWidgets.QLineEdit(self)
         self.chosen_employee.move(870, 110)
         self.chosen_employee.setReadOnly(True)
         self.chosen_employee.setFixedSize(150, 20)
         self.employee_value = QtWidgets.QListWidget(self)
+        self.employee_value.setStyleSheet('background-color:white')
         self.employee_value.move(870, 130)
-        for row in range(self.employee_amount_entry):
-            self.employee_value.addItem(self.employee_list[row]["employee_name"])
+        for row in range(-1, self.employee_amount_entry):
+            if row == -1:
+                self.employee_value.addItem("None")
+                self.chosen_employee.setText("None")
+            else:
+                self.employee_value.addItem(self.employee_list[row]["employee_name"])
         self.employee_value.setFixedSize(150, 100)
 
         self.customer = QtWidgets.QLabel("Khách hàng: ", self)
         self.customer.move(800, 250)
+        self.customer.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.chosen_customer = QtWidgets.QLineEdit(self)
         self.chosen_customer.move(870, 260)
         self.chosen_customer.setReadOnly(True)
         self.chosen_customer.setFixedSize(150, 20)
         self.customer_value = QtWidgets.QListWidget(self)
+        self.customer_value.setStyleSheet('background-color:white')
         self.customer_value.move(870, 280)
-        for row2 in range(self.customer_amount_entry):
-            self.customer_value.addItem(self.customer_list[row2]["customer_name"])
+        for row2 in range(-1, self.customer_amount_entry):
+            if row2 == -1:
+                self.customer_value.addItem("None")
+                self.chosen_customer.setText("None")
+            else:
+                self.customer_value.addItem(self.customer_list[row2]["customer_name"])
         self.customer_value.setFixedSize(150, 100)
 
         self.actual_money = QtWidgets.QLabel("Tiền phải trả: ", self)
         self.actual_money.move(800, 480)
+        self.actual_money.setStyleSheet('color:black;bold 12px;font :10.5pt Comic Sans MS')
         self.actual_money_value = QtWidgets.QLabel(self)
         self.actual_money_value.move(900, 480)
 
@@ -289,13 +311,28 @@ class MainWindow(QMainWindow):
         # self.change_money_value = QtWidgets.QLabel(self)
         # self.change_money_value.move(900, 450)
 
-        # ADD EDIT BOX ------------------------------------------------------------------------------------------------
+        # ADD SEARCH BOX ----------------------------------------------------------------------------------------------
+        self.last_search = -1
         self.search_box = QtWidgets.QLineEdit(self)
         self.search_box.move(30, 30)
+        self.search_box.setStyleSheet('background-color:white')
         self.search_box.resize(280, 25)
+        self.search_box.setCompleter(self.completer)    # give hints for user
+        # self.search_box.textChanged.connect(self.search_box)    # call the function every time text changed
+        self.search_box.textChanged.connect(self.clear_highlight)   # call the clear function to clear lingering color
+        self.search_box.returnPressed.connect(lambda: self.search_trigger(self.search_box.text(), self.product_name_list))       
+        self.search_box.setFocus()  # set the cursor in the edit box
+
+        self.search_btn = QtWidgets.QPushButton(self)
+        self.search_btn.setIcon(QtGui.QIcon("magnifying glass.png"))
+        self.search_btn.move(310, 30)
+        self.search_btn.resize(25, 25)
+        self.search_btn.clicked.connect(lambda: self.search_trigger(self.search_box.text(), self.product_name_list))  
+        # connect to the same function as the edit box
 
         # ADD TABLE ---------------------------------------------------------------------------------------------------
         self.purchased_list = QtWidgets.QTableWidget(self)
+        self.purchased_list.setStyleSheet('background-color:white')
         self.purchased_list.setRowCount(0)
         self.purchased_list.setColumnCount(10)
         self.purchased_list.move(30, 100)
@@ -348,11 +385,12 @@ class MainWindow(QMainWindow):
 
         # CREATE TABLE OF PRODUCTS ------------------------------------------------------------------------------------
         self.product_list = QtWidgets.QTableWidget(self)
+        self.product_list.setStyleSheet('background-color:white')
         self.product_list.setRowCount(self.product_amount_entry)
-        self.product_list.setColumnCount(5)
+        self.product_list.setColumnCount(6)
         self.product_list.move(30, 360)
         self.product_list.resize(520, 200)
-        self.product_list.setHorizontalHeaderLabels(["Code", "Name", "Category", "Brand", "Price"])
+        self.product_list.setHorizontalHeaderLabels(["Code", "Name", "Category", "Brand", "Price", ""])
 
         item0 = QtWidgets.QTableWidgetItem("Code")
         item0.setBackground(QtGui.QColor(0, 255, 0))
@@ -363,12 +401,15 @@ class MainWindow(QMainWindow):
         item2 = QtWidgets.QTableWidgetItem("Category")
         item2.setBackground(QtGui.QColor(0, 255, 0))
         self.product_list.setHorizontalHeaderItem(2, item2)
-        item3 = QtWidgets.QTableWidgetItem("Branđ")
+        item3 = QtWidgets.QTableWidgetItem("Brand")
         item3.setBackground(QtGui.QColor(0, 255, 0))
         self.product_list.setHorizontalHeaderItem(3, item3)
         item4 = QtWidgets.QTableWidgetItem("Price")
         item4.setBackground(QtGui.QColor(0, 255, 0))
         self.product_list.setHorizontalHeaderItem(4, item4)
+        item5 = QtWidgets.QTableWidgetItem("")
+        item5.setBackground(QtGui.QColor(0, 255, 0))
+        self.product_list.setHorizontalHeaderItem(5, item5)
 
         self.product_list.verticalHeader().hide()
         self.product_list.horizontalHeaderItem(0).setTextAlignment(0)
@@ -376,11 +417,20 @@ class MainWindow(QMainWindow):
         self.product_list.horizontalHeaderItem(2).setTextAlignment(0)
         self.product_list.horizontalHeaderItem(3).setTextAlignment(0)
         self.product_list.horizontalHeaderItem(4).setTextAlignment(0)
+
         self.product_list.setColumnWidth(0, 50)
         self.product_list.setColumnWidth(1, 150)
+        self.product_list.setColumnWidth(3, 75)
+        self.product_list.setColumnWidth(4, 75)
+        self.product_list.setColumnWidth(5, 30)
         self.product_list.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)  # disable editing feature
         self.product_list.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.load_product_from_db()
+
+        # CREATE PICTURE LABEL
+        self.pic = QtWidgets.QLabel(self)
+        self.pic.resize(200, 200)
+        self.pic.move(570, 360)
 
         # TRIGGERED EVENTS --------------------------------------------------------------------------------------------
         self.purchased_list.cellClicked.connect(self.del_incr_decr_operation)
@@ -392,13 +442,31 @@ class MainWindow(QMainWindow):
         self.employee_value.currentTextChanged.connect(self.choose_employee)
         self.customer_value.currentTextChanged.connect(self.choose_customer)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.refresh)
-        self.timer.start(1000)
+        # self.timer = QtCore.QTimer()
+        # self.timer.timeout.connect(self.refresh)
+        # self.timer.start(1000)
 
     # DEFINE TRIGGERED EVENTS -----------------------------------------------------------------------------------------
-    def search_trigger(self):
-        print("search thu gi do o day")
+    def search_trigger(self, name, name_list):
+        print("vao ham")
+        if name in name_list:
+            print("tim thay")
+            name_index = name_list.index(name)
+            for i in range(6):
+                self.product_list.item(name_index, i).setBackground(QtGui.QColor(150, 150, 150))
+            if self.last_search >= 0:
+                for i in range(6):
+                    self.product_list.item(self.last_search, i).setBackground(QtGui.QColor(255, 255, 255))
+            self.last_search = copy.deepcopy(name_index)
+        else:
+            print("khong tim thay")
+
+    def clear_highlight(self):
+        if self.search_box.text() == "":
+            if self.last_search >= 0:    
+                for i in range(6):
+                    self.product_list.item(self.last_search, i).setBackground(QtGui.QColor(255, 255, 255))
+            self.last_search = -1   # reset value of last-search index
 
     def insert_item_to_table(self,
                              table,
@@ -466,9 +534,6 @@ class MainWindow(QMainWindow):
         # add up all the costs
         self.add_price()
 
-    def add_tab(self):
-        pass
-
     def add_price(self):
         base_price = 0
         for row in range(0, self.purchased_list.rowCount()):
@@ -497,29 +562,38 @@ class MainWindow(QMainWindow):
             self.product_list.setItem(i, 2, QtWidgets.QTableWidgetItem(str(self.product_list_db[i]["product_category"])))
             self.product_list.setItem(i, 3, QtWidgets.QTableWidgetItem(str(self.product_list_db[i]["product_brand"])))
             self.product_list.setItem(i, 4, QtWidgets.QTableWidgetItem(str(round(self.product_list_db[i]["product_price"]))))
+            self.product_list.setItem(i, 5, QtWidgets.QTableWidgetItem("+"))
 
     def select_product_from_db(self, row, column):
-        print(self.already_added_row)
-        if row in self.already_added_row:
-            index = self.already_added_row.index(row)
-            amount = int(self.purchased_list.item(index, 5).text()) + 1
-            if self.out_of_stock_warning(row, amount) is not True:
-                self.purchased_list.setItem(index, 5, QtWidgets.QTableWidgetItem(str(amount)))
-                price = int(self.purchased_list.item(index, 8).text())
-                # print(price)
-                price += price / (amount - 1)
-                self.purchased_list.setItem(index, 8, QtWidgets.QTableWidgetItem(str(round(price))))
-                self.add_price()
-        else:
-            if self.out_of_stock_warning(row, 1) is not True:
-                self.already_added_row.append(row)
-                code = str(self.product_list_db[row]["product_code"])
-                name = str(self.product_list_db[row]["product_name"])
-                category = str(self.product_list_db[row]["product_category"])
-                brand = str(self.product_list_db[row]["product_brand"])
-                price = str(round(self.product_list_db[row]["product_price"]))
-                print(price)
-                self.insert_item_to_table(self.purchased_list, code, name, category, brand, price)
+        # print(self.already_added_row)
+        if self.product_list.item(row, column).text() == '+':
+            if row in self.already_added_row:
+                index = self.already_added_row.index(row)
+                amount = int(self.purchased_list.item(index, 5).text()) + 1
+                if self.out_of_stock_warning(row, amount) is not True:
+                    self.purchased_list.setItem(index, 5, QtWidgets.QTableWidgetItem(str(amount)))
+                    price = int(self.purchased_list.item(index, 8).text())
+                    # print(price)
+                    price += price / (amount - 1)
+                    self.purchased_list.setItem(index, 8, QtWidgets.QTableWidgetItem(str(round(price))))
+                    self.add_price()
+            else:
+                if self.out_of_stock_warning(row, 1) is not True:
+                    self.already_added_row.append(row)
+                    code = str(self.product_list_db[row]["product_code"])
+                    name = str(self.product_list_db[row]["product_name"])
+                    category = str(self.product_list_db[row]["product_category"])
+                    brand = str(self.product_list_db[row]["product_brand"])
+                    price = str(round(self.product_list_db[row]["product_price"]))
+                    print(price)
+                    self.insert_item_to_table(self.purchased_list, code, name, category, brand, price)
+        self.load_pixmap(row, column)
+        # print(self.product_list_db[row]["product_image"])
+
+    def load_pixmap(self, row, column):
+        pixmap = QtGui.QPixmap("C:/Users/DELL/Documents/pycharm/image/" + self.product_list_db[row]["product_image"])
+        pixmap_scaled = pixmap.scaled(QtCore.QSize(200, 200), QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.pic.setPixmap(pixmap_scaled)
 
     def out_of_stock_warning(self, number, amount):
         remain = self.warehouse_list_db[number]["inventory_number"]
@@ -590,6 +664,7 @@ class MainWindow(QMainWindow):
 
     def choose_customer(self):
         self.current_cus = self.customer_value.currentItem().text()
+
         self.chosen_customer.setText(self.current_cus)
         for i in range(self.customer_amount_entry):
             if self.customer_list[i]["customer_name"] == self.current_cus:
@@ -605,11 +680,12 @@ class MainWindow(QMainWindow):
             warning = QtWidgets.QErrorMessage(self)
             warning.setWindowTitle("No product added yet!!")
             warning.showMessage("Bạn chưa thêm vào bất cứ sản phẩm nào!!!")
-            pass
+
         elif (self.customer_code is None) or (self.employee_code is None):
             warning2 = QtWidgets.QErrorMessage(self)
             warning2.setWindowTitle("Empty field!")
             warning2.showMessage("Bạn chưa chọn nhân viên hoặc khách hàng")
+            
         else:
             now = datetime.datetime.now()
             bill_date = now.strftime("%Y-%m-%d")
@@ -653,15 +729,41 @@ class MainWindow(QMainWindow):
             warehouse_db.update(product_code, var3, product_code)
 
     def refresh(self):
+        """ Refresh method """
+        # Refresh product table list
+        while (self.product_list.rowCount() > 0):
+            self.product_list.removeRow(0)
+
         self.product_list_db, self.product_amount_entry = product_db.select_all()
-        # self.customer_list, self.customer_amount_entry = customer_db.select_all()
-        # for row in range(self.product_amount_entry):
-        #     self.product_list.removeRow(row)
+        for i in range(self.product_amount_entry):
+            self.product_list.insertRow(i)
         self.load_product_from_db()
+        
+        # Refresh employee table list
+        self.employee_list, self.employee_amount_entry = employee_db.select_all()
+        self.employee_value.setCurrentItem(self.employee_value.item(0))
+        for i in range(self.employee_amount_entry,0,-1):
+            self.employee_value.takeItem(i)
+
+        for j in range(self.employee_amount_entry):
+            self.employee_value.addItem(self.employee_list[j]["employee_name"])
+        
+
+        # Refresh customer table list
+        self.customer_list, self.customer_amount_entry = customer_db.select_all()
+        self.customer_value.setCurrentItem(self.customer_value.item(0))
+        for i in range(self.customer_amount_entry,0,-1):
+            # self.customer_value.takeItem(self.customer_value.currentRow())
+            self.customer_value.takeItem(i)
+
         # self.customer_value.clear()
-        # for row2 in range(self.customer_amount_entry):
-        #     self.customer_value.addItem(self.customer_list[row2]["customer_name"])
+        # self.customer_value.takeItem(self.customer_value.currentItem())
+                
+        for j in range(self.customer_amount_entry):
+            self.customer_value.addItem(self.customer_list[j]["customer_name"])
         # self.customer_value.setFixedSize(150, 100)
+
+
 
     def refresh1(self):
         self.customer_list, self.customer_amount_entry = customer_db.select_all()
@@ -700,6 +802,10 @@ class MainWindow(QMainWindow):
     def show_add_e(self):
         self.add_e = employee_add.employee_add()
         self.add_e.show()
+
+
+class CustomError(Exception):
+    pass
 
 
 if __name__ == '__main__':
