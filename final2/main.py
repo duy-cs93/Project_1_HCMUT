@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QApplication, QWidget, QPushButton, QAction, QLineEdit, QMessageBox,QLabel,QInputDialog
 from PyQt5.QtCore import pyqtSlot
@@ -20,6 +20,7 @@ import product_add, product_list
 import warehouse_add, warehouse_list
 import employee_list, employee_add
 import invoice
+import new_user
 
 
 class Login(QDialog):
@@ -78,15 +79,20 @@ class Login(QDialog):
         self.password_text.resize(190, 25)
         self.password_text.setStyleSheet('background-color:#64ff64; color:#000000;padding-top:0px;font-size:10px;padding-left:10px;font: bold 12px')
 
-        # Create button in the window
+        # Create New user button in the window
+        self.btn_new_user = QtWidgets.QPushButton('User mới', self)
+        self.btn_new_user.move(20, 180)
+        self.btn_new_user.resize(70, 30)
+        self.btn_new_user.setStyleSheet('background-color:#4e4e4e; color:#fafafa ; font-size =15px; border = 1px solid #4e4e4e;border-radius:10px;font: bold 14px')
+
+	self.btn_new_user.clicked.connect(self.show_new_user)
+
+        # Create Log in button in the window
         self.button = QtWidgets.QPushButton('Đăng nhập', self)
-        self.button.move(90, 180)
+        self.button.move(130, 180)
         self.button.resize(80, 30)
         self.button.setStyleSheet('background-color:#4e4e4e; color:#fafafa ; font-size =15px; border = 1px solid #4e4e4e;border-radius:10px;font: bold 14px')
-
-        # connect button to function on_click
         self.button.clicked.connect(self.on_click)
-
         self.show()
 
     def on_click(self):
@@ -105,6 +111,10 @@ class Login(QDialog):
             self.error.showMessage('Tên đăng nhập và mật khẩu chưa đúng !')
             self.error.setWindowTitle('Error')
 
+    def show_new_user(self):
+        self.close()
+        self.new_user = new_user.new_user()
+        self.new_user.show()
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
